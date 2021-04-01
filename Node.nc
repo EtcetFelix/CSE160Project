@@ -22,7 +22,7 @@ module Node{
    uses interface SimpleSend as Sender;
 
    uses interface CommandHandler;
-   //uses interface Flooding;
+   uses interface Flooding as Flooding;
    uses interface NeighborDiscovery as NeighborDiscovery;
 }
 
@@ -59,6 +59,10 @@ implementation{
          if (myMsg->dest == 0) {
       		call NeighborDiscovery.discover(myMsg);
       	 }
+          else {
+            dbg(GENERAL_CHANNEL, "Got Here\n");
+            call Flooding.Flood(myMsg);
+          }
          return msg;
       }
       dbg(GENERAL_CHANNEL, "Unknown Packet Type %d\n", len);
@@ -67,9 +71,7 @@ implementation{
 
 
    event void CommandHandler.ping(uint16_t destination, uint8_t *payload){
-      dbg(GENERAL_CHANNEL, "PING EVENT \n");
-      makePack(&sendPackage, TOS_NODE_ID, destination, 0, 0, 0, payload, PACKET_MAX_PAYLOAD_SIZE);
-      call Sender.send(sendPackage, destination);
+      call Flooding.ping(destination, payload);
    }
 
    event void CommandHandler.printNeighbors(){}

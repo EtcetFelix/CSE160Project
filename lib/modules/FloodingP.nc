@@ -4,10 +4,10 @@
 
 module FloodingP {
 	provides interface Flooding;
-	uses interface SimpleSend;
-	uses interface MapList<uint16_t, uint16_t> as PacketsReceived;
+	uses interface SimpleSend as simpleSend;
+	uses interface MapList<uint16_t, uint16_t> as PreviousPackets;
 }
-Implementation {
+implementation {
 	pack sendPackage;
 	uint16_t sequenceNum = 0;
 
@@ -20,8 +20,17 @@ Implementation {
         memcpy(Package->payload, payload, length);
     }
 
-    command void Flooding.handleFlooding(pack* letter){                                 // Letter is the same as "packet"
-        if(call PacketsReceived.containsVal(letter -> src, letter -> seq)){
+    command void Flooding.ping(uint16_t destination, uint8_t *payload) {
+        dbg(FLOODING_CHANNEL, "PING EVENT \n");
+        dbg(FLOODING_CHANNEL, "SENDER %d\n", TOS_NODE_ID);
+        dbg(FLOODING_CHANNEL, "DEST %d\n", destination);
+        makePack(&sendPackage, TOS_NODE_ID, destination, 22, PROTOCOL_PING, sequenceNum, payload, PACKET_MAX_PAYLOAD_SIZE);
+        call simpleSend.send(sendPackage, AM_BROADCAST_ADDR);
+        sequenceNum++;
+    }
+
+    command void Flooding.Flood(pack* letter){                                 // Letter is the same as "packet"
+        if(call PreviousPackets.containsVal(letter -> src, letter -> seq)){
             dbg(FLOODING_CHANNEL, "Duplicate packet. Will not forward...\n");           //Debugging Message PRint
         } else if(letter -> TTL == 0) {                                                 //When the packet's time to live has expired we don't forward the packet infinitely
             dbg(FLOODING_CHANNEL, "Packet has expired. Will not forward to prevent infinite loop...\n");
@@ -30,20 +39,20 @@ Implementation {
                 dbg(FLOODING_CHANNEL, "Package has reached the destination!...\n");
                 //logPack(letter); //figure out if it breaks the code
 
-                call PacketsReceived.insertVal(letter -> src, letter -> seq);           //Keeping track of the source of our pakets and it's respective sequence
+                call PreviousPackets.insertVal(letter -> src, letter -> seq);           //Keeping track of the source of our pakets and it's respective sequence
                 makePack(&sendPackage, letter -> dest, letter -> src, BETTER_TTL, PROTOCOL_PINGREPLY, sequenceNum++, (unint8_t *) letter -> payload, PACKET_MAX_PAYLOAD_SIZE);     //RePacket to send to subsequent nodes
-                call Sender.send(senndPackage, AM_BROADCAST_ADDR);                      //Send new package to  all modules
+                call simpleSend.send(sendPackage, AM_BROADCAST_ADDR);                      //Send new package to  all modules
                 dbg(FLOODING_CHANNEL, "RePackage has been resent!...\n");               //Debug Message being printed
             } else if(letter -> protocol == PROTOCOL_PINGREPLY){
                 dbg(FLOODING_CHANNEL, "RePackage has reached destination...\n");
                 //logPack(letter); //figure out what this line does
-                call PacketsReceived.insertVal(letter -> src, letter -> seq);           //Login PAcket information into the Maplist
+                //call PreviousPackets.insertVal(letter -> src, letter -> seq);           //Login PAcket information into the Maplist
             }
         } else {
             letter -> TTL -= 1;                                                         //HANDLEFORWARD call
             
-            call PacketsReceived.insertVal(letter -> src, letter -> seq);               //Calling to record package RECEIVED
-            call Sender.send(*letter, AM_BROADCAST_ADDR);                               //Module that sends packets
+            //call PreviousPackets.insertVal(letter -> src, letter -> seq);               //Calling to record package RECEIVED
+            call simpleSend.send(*letter, AM_BROADCAST_ADDR);                               //Module that sends packets
 
             dbg(FLOODING_CHANNEL, "New package has been forwarded with new Time To Live...\n") //
         }
