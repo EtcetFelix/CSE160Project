@@ -60,7 +60,7 @@ implementation{
       		call NeighborDiscovery.discover(myMsg);
       	 }
           else {
-            dbg(GENERAL_CHANNEL, "Got Here\n");
+            //dbg(GENERAL_CHANNEL, "Got Here\n");
             call Flooding.Flood(myMsg);
           }
          return msg;

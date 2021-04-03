@@ -80,6 +80,11 @@ implementation {
         memcpy(Package->payload, payload, length);
     } 
 
+    
+    //TODO: Get list of neighbors for each node
+    //TODO: print neighbors
+    //TODO: Put debug statements for everywhere we print neighbors
+
 
 
 
