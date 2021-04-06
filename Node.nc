@@ -22,11 +22,11 @@ module Node{
    uses interface SimpleSend as Sender;
 
    uses interface CommandHandler;
-   uses interface Flooding as Flooding;
-   //uses interface NeighborDiscovery as NeighborDiscovery;
+   //uses interface Flooding as Flooding;
+   uses interface NeighborDiscovery as NeighborDiscovery;
 }
 
-implementation{
+implementation {
    pack sendPackage;
 
    // Prototypes
@@ -37,7 +37,7 @@ implementation{
 
       dbg(GENERAL_CHANNEL, "Booted\n");
 
-     // call NeighborDiscovery.start();
+      call NeighborDiscovery.start();
    }
 
    event void AMControl.startDone(error_t err){
@@ -55,18 +55,18 @@ implementation{
       pack* myMsg = (pack*) payload;
       
       dbg(GENERAL_CHANNEL, "Packet Received\n");
-      dbg(FLOODING_CHANNEL, "Why is this shit not working? Scenario before we go into the IF statement\n");
+      //dbg(FLOODING_CHANNEL, "Scenario before we go into the IF statement\n");
       if(len==sizeof(pack)){
          
-         dbg(FLOODING_CHANNEL, "Why is this shit not working? Scenario where the myMSG equals the packege payload\n");
+         //dbg(FLOODING_CHANNEL, "Scenario where the myMSG equals the packege payload\n");
          dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
          if (myMsg->dest == 0) {
-            dbg(FLOODING_CHANNEL, "Why is this shit not working? Scenarion where we go to neighbour discovery\n");
-      		//call NeighborDiscovery.discover(myMsg);
+            //dbg(FLOODING_CHANNEL, "Scenario where we go to neighbour discovery\n");
+      		call NeighborDiscovery.discover(myMsg);
       	 }
           else {
-            dbg(GENERAL_CHANNEL, "Got Here\n");
-            call Flooding.Flood(myMsg);
+            //dbg(GENERAL_CHANNEL, "Got Here\n");
+            //call Flooding.Flood(myMsg);
           }
          return msg;
       }
@@ -76,11 +76,14 @@ implementation{
 
 
    event void CommandHandler.ping(uint16_t destination, uint8_t *payload){
-      dbg(FLOODING_CHANNEL, "Why is this shit not working?\n");
-      call Flooding.ping(destination, payload);
+      //dbg(FLOODING_CHANNEL, "Before ping\n");
+      //call Flooding.ping(destination, payload);
    }
 
-   //event void CommandHandler.printNeighbors(){}
+   event void CommandHandler.printNeighbors(){
+   		//dbg(GENERAL_CHANNEL, "Should be Printing\n");
+   		call NeighborDiscovery.printNeighbors();
+   }
 
    event void CommandHandler.printRouteTable(){}
 

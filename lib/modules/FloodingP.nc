@@ -5,7 +5,6 @@
 module FloodingP {
 	provides interface Flooding;
 	uses interface SimpleSend as simpleSend;
-	//uses interface MapList<uint16_t, uint16_t> as PreviousPackets;
 	uses interface Hashmap<uint32_t> as PreviousPackets;
 }
 implementation {

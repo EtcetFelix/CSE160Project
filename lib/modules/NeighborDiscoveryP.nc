@@ -85,6 +85,18 @@ implementation {
     //TODO: print neighbors
     //TODO: Put debug statements for everywhere we print neighbors
 
+    command void NeighborDiscovery.printNeighbors() {
+        uint16_t i = 0;
+        uint32_t* neighbors = call NeighborTable.getKeys();  
+        // Print neighbors
+        dbg(NEIGHBOR_CHANNEL, "Printing Neighbors:\n");
+        for(i=i; i < call NeighborTable.size(); i++) {
+            if(neighbors[i] != 0) {
+                dbg(NEIGHBOR_CHANNEL, "\tNeighbor: %d\n", neighbors[i]);
+            }
+        }
+    }
+
 
 
 

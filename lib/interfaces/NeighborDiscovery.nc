@@ -3,5 +3,6 @@ interface NeighborDiscovery {
 	
 	command error_t start();
    	command void discover(pack* packet);
+   	command void printNeighbors();
 
 }
