@@ -34,6 +34,6 @@ implementation {
     components FloodingC;
     Node.Flooding -> FloodingC;
 
-    components NeighborDiscoveryC;
-    Node.NeighborDiscovery -> NeighborDiscoveryC;
+    //components NeighborDiscoveryC;
+   // Node.NeighborDiscovery -> NeighborDiscoveryC;
 }
