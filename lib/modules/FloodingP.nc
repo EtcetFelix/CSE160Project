@@ -40,12 +40,11 @@ implementation {
     command void Flooding.Flood(pack* letter){                                 // Letter is the same as "packet"
         if(containsval(letter -> seq, letter -> src)){
             dbg(FLOODING_CHANNEL, "Duplicate packet. Will not forward...\n");           //Debugging Message PRint
-        } else if(letter -> TTL == 0) {                                                 //When the packet's time to live has expired we don't forward the packet infinitely
+        } else if(letter -> TTL == 0) {                                                 //When the packet's time to live has expired we don't forward
             dbg(FLOODING_CHANNEL, "Packet has expired. Will not forward to prevent infinite loop...\n");
         } else if(letter -> dest ==  TOS_NODE_ID){
             if(letter -> protocol == PROTOCOL_PING){                                    //inplementing HANDLE PAYLOAD RECEIVED
                 dbg(FLOODING_CHANNEL, "Package has reached the destination!...\n");
-                //logPack(letter); //figure out if it breaks the code
 
                 call PreviousPackets.insert(letter -> seq, letter -> src);           //Keeping track of the source of our pakets and it's respective sequence
                 makePack(&sendPackage, letter -> dest, letter -> src, 10, PROTOCOL_PINGREPLY, sequenceNum++, (uint8_t *) letter -> payload, PACKET_MAX_PAYLOAD_SIZE);     //RePacket to send to subsequent nodes
@@ -53,7 +52,6 @@ implementation {
                 dbg(FLOODING_CHANNEL, "RePackage has been resent!...\n");               //Debug Message being printed
             } else if(letter -> protocol == PROTOCOL_PINGREPLY){
                 dbg(FLOODING_CHANNEL, "RePackage has reached destination...\n");
-                //logPack(letter); //figure out what this line does
                 call PreviousPackets.insert(letter -> seq, letter -> src);           //Login PAcket information into the Maplist
             }
         } else {

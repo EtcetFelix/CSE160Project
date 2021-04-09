@@ -7,6 +7,7 @@
  *
  */
 #include <Timer.h>
+#include <string.h>
 #include "includes/command.h"
 #include "includes/packet.h"
 #include "includes/CommandMsg.h"
@@ -22,7 +23,8 @@ module Node{
    uses interface SimpleSend as Sender;
 
    uses interface CommandHandler;
-   //uses interface Flooding as Flooding;
+   uses interface Flooding as Flooding;
+   uses interface DistanceVectorRouting as DistanceVectorRouting;
    uses interface NeighborDiscovery as NeighborDiscovery;
 }
 
@@ -38,6 +40,7 @@ implementation {
       dbg(GENERAL_CHANNEL, "Booted\n");
 
       call NeighborDiscovery.start();
+      call DistanceVectorRouting.start();
    }
 
    event void AMControl.startDone(error_t err){
@@ -52,32 +55,39 @@ implementation {
    event void AMControl.stopDone(error_t err){}
 
    event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
-      pack* myMsg = (pack*) payload;
-      
-      dbg(GENERAL_CHANNEL, "Packet Received\n");
-      //dbg(FLOODING_CHANNEL, "Scenario before we go into the IF statement\n");
       if(len==sizeof(pack)){
-         
-         //dbg(FLOODING_CHANNEL, "Scenario where the myMSG equals the packege payload\n");
-         dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
-         if (myMsg->dest == 0) {
-            //dbg(FLOODING_CHANNEL, "Scenario where we go to neighbour discovery\n");
+      	 pack* myMsg = (pack*) payload;
+      	 // Don't print messages from neighbor probe packets (packets are created in NeighborDiscovery)
+      	 if( strcmp( (char*)(myMsg->payload), "NeighborProbing") && (myMsg->protocol) != PROTOCOL_DV) {
+      		dbg(GENERAL_CHANNEL, "Packet Received\n");
+      	 	dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
+      	 }
+         if(myMsg->protocol == PROTOCOL_DV) {
+         	//dbg(GENERAL_CHANNEL, "Distance Vector Protocol\n");
+           	call DistanceVectorRouting.handleDV(myMsg);
+         }
+         else if (myMsg->dest == 0) {
+            //dbg(GENERAL_CHANNEL, "Neighbor Discovery called\n");
       		call NeighborDiscovery.discover(myMsg);
       	 }
           else {
             //dbg(GENERAL_CHANNEL, "Got Here\n");
             //call Flooding.Flood(myMsg);
+            call DistanceVectorRouting.routePacket(myMsg);
           }
          return msg;
       }
+      // print these only when packet not recognised
+      dbg(GENERAL_CHANNEL, "Packet Received\n");
       dbg(GENERAL_CHANNEL, "Unknown Packet Type %d\n", len);
       return msg;
    }
 
 
    event void CommandHandler.ping(uint16_t destination, uint8_t *payload){
-      //dbg(FLOODING_CHANNEL, "Before ping\n");
+      //dbg(GENERAL_CHANNEL, "INITIATED ping\n");
       //call Flooding.ping(destination, payload);
+      call DistanceVectorRouting.ping(destination, payload);
    }
 
    event void CommandHandler.printNeighbors(){
@@ -85,7 +95,9 @@ implementation {
    		call NeighborDiscovery.printNeighbors();
    }
 
-   event void CommandHandler.printRouteTable(){}
+   event void CommandHandler.printRouteTable(){
+   		call DistanceVectorRouting.printRouteTable();
+   }
 
    event void CommandHandler.printLinkState(){}
 
