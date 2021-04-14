@@ -39,4 +39,10 @@ implementation {
 
     components DistanceVectorRoutingC;
     Node.DistanceVectorRouting -> DistanceVectorRoutingC;
+
+    components TransportC;
+    Node.Transport -> TransportC;
+
+    components TransportAppC;
+    Node.TransportApp -> TransportAppC;
 }

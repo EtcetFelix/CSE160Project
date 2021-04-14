@@ -18,6 +18,7 @@ module DistanceVectorRoutingP {
     uses interface NeighborDiscovery as NeighborDiscovery;
     uses interface Timer<TMilli> as DVRTimer;
     uses interface Random as Random;
+    uses interface Transport;
 }
 
 implementation {
@@ -81,6 +82,7 @@ implementation {
             return;
         } else if(myMsg->dest == TOS_NODE_ID && myMsg->protocol == PROTOCOL_TCP) {
             dbg(ROUTING_CHANNEL, "TCP Packet has reached destination %d\n", TOS_NODE_ID);
+            call Transport.receive(myMsg);
             return;
         }
         if((findNextHop(myMsg->dest)) != 0) {

@@ -7,13 +7,25 @@ enum{
     ROOT_SOCKET_PORT = 255,
     SOCKET_BUFFER_SIZE = 128,
 };
+enum socket_type {
+    SERVER,
+    CLIENT
+};
 
 enum socket_state{
     CLOSED,
+    OPENED,
+    NAMED,
     LISTEN,
     ESTABLISHED,
     SYN_SENT,
     SYN_RCVD,
+    FIN_WAIT_1,
+    FIN_WAIT_2,
+    CLOSING,
+    TIME_WAIT,
+    CLOSE_WAIT,
+    LAST_ACK
 };
 
 
@@ -32,10 +44,12 @@ typedef uint8_t socket_t;
 
 // State of a socket. 
 typedef struct socket_store_t{
-    uint8_t flag;
+    uint8_t flags;
     enum socket_state state;
-    socket_port_t src;
+    enum socket_type type;
+    socket_addr_t src;
     socket_addr_t dest;
+    uint8_t connectQueue[MAX_NUM_OF_SOCKETS-1];
 
     // This is the sender portion.
     uint8_t sendBuff[SOCKET_BUFFER_SIZE];
@@ -50,6 +64,8 @@ typedef struct socket_store_t{
     uint8_t nextExpected;
 
     uint16_t RTT;
+    uint32_t RTO;
+    uint32_t RTX;
     uint8_t effectiveWindow;
 }socket_store_t;
 
