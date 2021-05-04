@@ -19,6 +19,8 @@ module Node{
 
    uses interface SplitControl as AMControl;
    uses interface Receive;
+   uses interface Transport;
+   uses interface TransportApp;
 
    uses interface SimpleSend as Sender;
 
@@ -26,6 +28,8 @@ module Node{
    uses interface Flooding as Flooding;
    uses interface DistanceVectorRouting as DistanceVectorRouting;
    uses interface NeighborDiscovery as NeighborDiscovery;
+
+   uses interface LinkStateRouting as LinkStateRouting;   #proj 4
 }
 
 implementation {
@@ -41,6 +45,8 @@ implementation {
 
       call NeighborDiscovery.start();
       call DistanceVectorRouting.start();
+      call Transport.start();
+      call LinkStateRouting.start();      //proj4
    }
 
    event void AMControl.startDone(error_t err){
@@ -57,8 +63,8 @@ implementation {
    event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
       if(len==sizeof(pack)){
       	 pack* myMsg = (pack*) payload;
-      	 // Don't print messages from neighbor probe packets (packets are created in NeighborDiscovery)
-      	 if( strcmp( (char*)(myMsg->payload), "NeighborProbing") && (myMsg->protocol) != PROTOCOL_DV) {
+      	 // Don't print messages from neighbor probe packets or DV packets or TCP packets
+      	 if( strcmp( (char*)(myMsg->payload), "NeighborProbing") && (myMsg->protocol) != PROTOCOL_DV && myMsg->protocol != PROTOCOL_TCP) {
       		dbg(GENERAL_CHANNEL, "Packet Received\n");
       	 	dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
       	 }
@@ -70,14 +76,18 @@ implementation {
             //dbg(GENERAL_CHANNEL, "Neighbor Discovery called\n");
       		call NeighborDiscovery.discover(myMsg);
       	 }
+          else if(myMsg -> protocol == PROTOCOL_LS){
+            call LinkStateRouting.handleLS(myMsg);       //proj 4
+          }
           else {
             //dbg(GENERAL_CHANNEL, "Got Here\n");
             //call Flooding.Flood(myMsg);
             call DistanceVectorRouting.routePacket(myMsg);
+            //call LinkStateRouting.routePacket(myMsg);  //proj4
           }
          return msg;
       }
-      // print these only when packet not recognised
+      // print these only when packet not recognized
       dbg(GENERAL_CHANNEL, "Packet Received\n");
       dbg(GENERAL_CHANNEL, "Unknown Packet Type %d\n", len);
       return msg;
@@ -88,6 +98,7 @@ implementation {
       //dbg(GENERAL_CHANNEL, "INITIATED ping\n");
       //call Flooding.ping(destination, payload);
       call DistanceVectorRouting.ping(destination, payload);
+      //call LinkStateRouting.ping(destination, payload);      //proj4
    }
 
    event void CommandHandler.printNeighbors(){
@@ -99,13 +110,30 @@ implementation {
    		call DistanceVectorRouting.printRouteTable();
    }
 
-   event void CommandHandler.printLinkState(){}
+   event void CommandHandler.printLinkState(){  //proj 4
+      call LinkStateRouting.printRouteTable();
+   }
 
    event void CommandHandler.printDistanceVector(){}
 
-   event void CommandHandler.setTestServer(){}
+   event void CommandHandler.setTestServer(uint8_t port){
 
-   event void CommandHandler.setTestClient(){}
+   		call TransportApp.startServer(port);
+   		dbg(TRANSPORT_CHANNEL, "Node %u listening on port %u\n", TOS_NODE_ID, port);
+   		//dbg(TRANSPORT_CHANNEL, "Setting test server\n");
+
+   }
+
+   event void CommandHandler.setTestClient(uint8_t dest, uint8_t srcPort, uint8_t destPort, uint16_t transfer){
+   		call TransportApp.startClient(dest, srcPort, destPort, transfer);
+        dbg(TRANSPORT_CHANNEL, "Node %u creating connection from port %u to port %u on node %u. Transferring bytes: %u\n", TOS_NODE_ID, srcPort, destPort, dest, transfer);
+        //dbg(TRANSPORT_CHANNEL, "Setting test client\n");
+   }
+
+   event void CommandHandler.setClientClose(uint8_t dest, uint8_t srcPort, uint8_t destPort) {
+        dbg(TRANSPORT_CHANNEL, "Node %u closing connection from port %u to port %u on node %u.\n", TOS_NODE_ID, srcPort, destPort, dest);
+        call TransportApp.closeClient(dest, srcPort, destPort);
+    }
 
    event void CommandHandler.setAppServer(){}
 

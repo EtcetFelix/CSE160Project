@@ -21,4 +21,7 @@ implementation {
 
     components RandomC as Random;
     DistanceVectorRoutingP.Random -> Random;
+
+    components TransportC as Transport;
+    DistanceVectorRoutingP.Transport -> Transport;
 }

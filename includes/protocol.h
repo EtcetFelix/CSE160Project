@@ -13,9 +13,8 @@ enum{
 	PROTOCOL_NAME = 3,
 	PROTOCOL_TCP= 4,
 	PROTOCOL_DV = 5,
-   PROTOCOL_CMD = 99
+   PROTOCOL_CMD = 99,
+   PROTOCOL_LS = 6				//project4
 };
-
-
 
 #endif /* PROTOCOL_H */
