@@ -2,7 +2,10 @@
 #include "../../includes/channels.h"
 #include "../../includes/packet.h"
 #include "../../includes/protocol.h"
-#include "../../includes/ls_protocol.h"
+// Link state vars
+#define LS_MAX_ROUTES 256
+#define LS_MAX_COST 17
+#define LS_TTL 17
 
 module LinkStateRoutingP {
     provides interface LinkStateRouting;
@@ -11,8 +14,8 @@ module LinkStateRoutingP {
     uses interface MapList<uint16_t, uint16_t> as PacketsReceived;  //wont be utilizing map list
     uses interface NeighborDiscovery as NeighborDiscovery;
     uses interface Flooding as Flooding;
-    uses interface Timer<TMilli> as LSRTimer;                       //change variable name
-    uses interface Random as Random;                                //change variable name
+    uses interface Timer<TMilli> as LSRTimer;                       
+    uses interface Random as Random;                                
 }
 
 implementation {

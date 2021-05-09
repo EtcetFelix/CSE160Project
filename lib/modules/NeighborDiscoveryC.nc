@@ -22,8 +22,9 @@ implementation {
     components new HashmapC(uint32_t, 20);
     NeighborDiscoveryP.NeighborTable -> HashmapC;
 
-    components DistanceVectorRoutingC;
-    NeighborDiscoveryP.DistanceVectorRouting -> DistanceVectorRoutingC;
+    //components DistanceVectorRoutingC;
+    //NeighborDiscoveryP.DistanceVectorRouting -> DistanceVectorRoutingC;
 
-
+    components LinkStateRoutingC;                               //Added for Project 4 impletation
+    NeighborDiscoveryP.LinkStateRouting -> LinkStateRoutingC;
 }

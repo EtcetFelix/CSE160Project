@@ -26,10 +26,10 @@ module Node{
 
    uses interface CommandHandler;
    uses interface Flooding as Flooding;
-   uses interface DistanceVectorRouting as DistanceVectorRouting;
+   //uses interface DistanceVectorRouting as DistanceVectorRouting;
    uses interface NeighborDiscovery as NeighborDiscovery;
 
-   uses interface LinkStateRouting as LinkStateRouting;   #proj 4
+   uses interface LinkStateRouting as LinkStateRouting;   //Proj 4 integrations
 }
 
 implementation {
@@ -44,7 +44,7 @@ implementation {
       dbg(GENERAL_CHANNEL, "Booted\n");
 
       call NeighborDiscovery.start();
-      call DistanceVectorRouting.start();
+      //call DistanceVectorRouting.start();
       call Transport.start();
       call LinkStateRouting.start();      //proj4
    }
@@ -64,26 +64,27 @@ implementation {
       if(len==sizeof(pack)){
       	 pack* myMsg = (pack*) payload;
       	 // Don't print messages from neighbor probe packets or DV packets or TCP packets
-      	 if( strcmp( (char*)(myMsg->payload), "NeighborProbing") && (myMsg->protocol) != PROTOCOL_DV && myMsg->protocol != PROTOCOL_TCP) {
+      	 if( strcmp( (char*)(myMsg->payload), "NeighborProbing") && (myMsg->protocol) != PROTOCOL_DV && myMsg->protocol != PROTOCOL_TCP && myMsg -> protocol != PROTOCOL_LS) {
       		dbg(GENERAL_CHANNEL, "Packet Received\n");
-      	 	dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
+      	 	dbg(GENERAL_CHANNEL, "%s\n", myMsg -> protocol);
+             dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
       	 }
          if(myMsg->protocol == PROTOCOL_DV) {
          	//dbg(GENERAL_CHANNEL, "Distance Vector Protocol\n");
-           	call DistanceVectorRouting.handleDV(myMsg);
+           	//call DistanceVectorRouting.handleDV(myMsg);
          }
          else if (myMsg->dest == 0) {
             //dbg(GENERAL_CHANNEL, "Neighbor Discovery called\n");
       		call NeighborDiscovery.discover(myMsg);
       	 }
           else if(myMsg -> protocol == PROTOCOL_LS){
-            call LinkStateRouting.handleLS(myMsg);       //proj 4
+            call LinkStateRouting.handleLS(myMsg);       //Proj 4 integration
           }
           else {
             //dbg(GENERAL_CHANNEL, "Got Here\n");
             //call Flooding.Flood(myMsg);
-            call DistanceVectorRouting.routePacket(myMsg);
-            //call LinkStateRouting.routePacket(myMsg);  //proj4
+            //call DistanceVectorRouting.routePacket(myMsg);
+            call LinkStateRouting.routePacket(myMsg);  //Proj4 integration
           }
          return msg;
       }
@@ -97,8 +98,8 @@ implementation {
    event void CommandHandler.ping(uint16_t destination, uint8_t *payload){
       //dbg(GENERAL_CHANNEL, "INITIATED ping\n");
       //call Flooding.ping(destination, payload);
-      call DistanceVectorRouting.ping(destination, payload);
-      //call LinkStateRouting.ping(destination, payload);      //proj4
+      //call DistanceVectorRouting.ping(destination, payload);
+      call LinkStateRouting.ping(destination, payload);                    //Proj 4 integrations
    }
 
    event void CommandHandler.printNeighbors(){
@@ -107,14 +108,12 @@ implementation {
    }
 
    event void CommandHandler.printRouteTable(){
-   		call DistanceVectorRouting.printRouteTable();
+   //		call DistanceVectorRouting.printRouteTable();
    }
 
-   event void CommandHandler.printLinkState(){  //proj 4
+   event void CommandHandler.printLinkState(){                               //Proj 4 integrations
       call LinkStateRouting.printRouteTable();
    }
-
-   event void CommandHandler.printDistanceVector(){}
 
    event void CommandHandler.setTestServer(uint8_t port){
 

@@ -37,8 +37,8 @@ implementation {
     components NeighborDiscoveryC;
     Node.NeighborDiscovery -> NeighborDiscoveryC;
 
-    components DistanceVectorRoutingC;
-    Node.DistanceVectorRouting -> DistanceVectorRoutingC;
+    //components DistanceVectorRoutingC;
+    //Node.DistanceVectorRouting -> DistanceVectorRoutingC;
 
     components TransportC;
     Node.Transport -> TransportC;
@@ -46,6 +46,6 @@ implementation {
     components TransportAppC;
     Node.TransportApp -> TransportAppC;
 
-    components LinkStateRoutingC;                   #proj4
+    components LinkStateRoutingC;                   //Project4 integration
     Node.LinkStateRouting -> LinkStateRoutingC;
 }

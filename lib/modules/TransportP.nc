@@ -17,7 +17,7 @@ module TransportP{
     uses interface Timer<TMilli> as TransmissionTimer;
     uses interface NeighborDiscovery;
     uses interface DistanceVectorRouting;
-    uses interface Hashmap<uint8_t> as socketTable;
+    uses interface Hashmap<uint8_t> as socketTable;                 //is this getting in the way of PRoject 4 implementatinon
 }
 
 implementation{

@@ -13,6 +13,8 @@ module NeighborDiscoveryP {
     uses interface Hashmap<uint32_t> as NeighborTable;
     uses interface SimpleSend as Sender;
 
+    uses interface LinkStateRouting as LinkStateRouting;            //added for Project 4
+
 }
 implementation {
 		
@@ -38,7 +40,9 @@ implementation {
         else if (packet->protocol == PROTOCOL_PINGREPLY && packet->dest == 0) {
             dbg(NEIGHBOR_CHANNEL, "PING REPLY Neighbor Discovery, Confirmed neighbor %d\n", packet->src);
             if(!call NeighborTable.contains(packet->src)) {
-                call NeighborTable.insert(packet->src, NODETIMETOLIVE);
+                call NeighborTable.insert(packet->src, NODETIMETOLIVE);  //Project 4 implementation
+              //call DistanceVectorRouting.handleNeighborFound();
+                call LinkStateRouting.handleNeighborFound();
             }
             else {call NeighborTable.insert(packet->src, NODETIMETOLIVE);}
         }
@@ -60,6 +64,7 @@ implementation {
             if (call NeighborTable.get(neighbors[i]) == 0) {
                 dbg(NEIGHBOR_CHANNEL, "Deleted Neighbor %d\n", neighbors[i]);
                 call NeighborTable.remove(neighbors[i]);
+                call LinkStateRouting.handleNeighborLost(neighbors[i]);          //PArt of PRoject 4 implemnetation
             }
             else {
                 call NeighborTable.insert(neighbors[i], call NeighborTable.get(neighbors[i])-1);
@@ -71,7 +76,17 @@ implementation {
         call Sender.send(sendp, AM_BROADCAST_ADDR);
     }
 
-        
+    //added Project 4 implementation
+
+    command uint32_t* NeighborDiscovery.getNeighbors(){
+        return call NeighborTable.getKeys();
+    }
+
+     command uint16_t NeighborDiscovery.getNeighborListSize() {
+        return call NeighborTable.size();
+    }
+
+
     void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t protocol, uint16_t seq, uint8_t* payload, uint8_t length) {
         //dbg(NEIGHBOR_CHANNEL, "In Timer fired 3\n");
         Package->src = src; Package->dest = dest;
