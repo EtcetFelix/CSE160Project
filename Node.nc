@@ -19,8 +19,8 @@ module Node{
 
    uses interface SplitControl as AMControl;
    uses interface Receive;
-   uses interface Transport;
-   uses interface TransportApp;
+   //uses interface Transport;
+   //uses interface TransportApp;
 
    uses interface SimpleSend as Sender;
 
@@ -45,7 +45,7 @@ implementation {
 
       call NeighborDiscovery.start();
       //call DistanceVectorRouting.start();
-      call Transport.start();
+      //call Transport.start();
       call LinkStateRouting.start();      //proj4
    }
 
@@ -64,10 +64,10 @@ implementation {
       if(len==sizeof(pack)){
       	 pack* myMsg = (pack*) payload;
       	 // Don't print messages from neighbor probe packets or DV packets or TCP packets
-      	 if( strcmp( (char*)(myMsg->payload), "NeighborProbing") && (myMsg->protocol) != PROTOCOL_DV && myMsg->protocol != PROTOCOL_TCP && myMsg -> protocol != PROTOCOL_LS) {
+      	 if( strcmp( (char*)(myMsg->payload), "NeighborProbing") && (myMsg->protocol) != PROTOCOL_DV && myMsg->protocol != PROTOCOL_TCP && myMsg->protocol != PROTOCOL_LS && myMsg->protocol != PROTOCOL_PING && myMsg->protocol != PROTOCOL_PINGREPLY) {
       		dbg(GENERAL_CHANNEL, "Packet Received\n");
-      	 	dbg(GENERAL_CHANNEL, "%s\n", myMsg -> protocol);
-             dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
+      	 	//dbg(GENERAL_CHANNEL, "%d\n", myMsg -> protocol);
+            dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
       	 }
          if(myMsg->protocol == PROTOCOL_DV) {
          	//dbg(GENERAL_CHANNEL, "Distance Vector Protocol\n");
@@ -117,21 +117,21 @@ implementation {
 
    event void CommandHandler.setTestServer(uint8_t port){
 
-   		call TransportApp.startServer(port);
-   		dbg(TRANSPORT_CHANNEL, "Node %u listening on port %u\n", TOS_NODE_ID, port);
+   		//call TransportApp.startServer(port);
+   		//dbg(TRANSPORT_CHANNEL, "Node %u listening on port %u\n", TOS_NODE_ID, port);
    		//dbg(TRANSPORT_CHANNEL, "Setting test server\n");
 
    }
 
    event void CommandHandler.setTestClient(uint8_t dest, uint8_t srcPort, uint8_t destPort, uint16_t transfer){
-   		call TransportApp.startClient(dest, srcPort, destPort, transfer);
-        dbg(TRANSPORT_CHANNEL, "Node %u creating connection from port %u to port %u on node %u. Transferring bytes: %u\n", TOS_NODE_ID, srcPort, destPort, dest, transfer);
+   		//call TransportApp.startClient(dest, srcPort, destPort, transfer);
+        //dbg(TRANSPORT_CHANNEL, "Node %u creating connection from port %u to port %u on node %u. Transferring bytes: %u\n", TOS_NODE_ID, srcPort, destPort, dest, transfer);
         //dbg(TRANSPORT_CHANNEL, "Setting test client\n");
    }
 
    event void CommandHandler.setClientClose(uint8_t dest, uint8_t srcPort, uint8_t destPort) {
-        dbg(TRANSPORT_CHANNEL, "Node %u closing connection from port %u to port %u on node %u.\n", TOS_NODE_ID, srcPort, destPort, dest);
-        call TransportApp.closeClient(dest, srcPort, destPort);
+        //dbg(TRANSPORT_CHANNEL, "Node %u closing connection from port %u to port %u on node %u.\n", TOS_NODE_ID, srcPort, destPort, dest);
+        //call TransportApp.closeClient(dest, srcPort, destPort);
     }
 
    event void CommandHandler.setAppServer(){}

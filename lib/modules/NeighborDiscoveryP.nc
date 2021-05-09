@@ -73,6 +73,7 @@ implementation {
         //dbg(NEIGHBOR_CHANNEL, "In Timer fired 2\n");
         makePack(&sendp, TOS_NODE_ID, 0, 1, PROTOCOL_PING, 0, &payload, PACKET_MAX_PAYLOAD_SIZE);
         //dbg(NEIGHBOR_CHANNEL, "In Timer fired 4\n");
+        //dbg(GENERAL_CHANNEL, "Sending ping from NeighborDiscovery to %d\n", );
         call Sender.send(sendp, AM_BROADCAST_ADDR);
     }
 

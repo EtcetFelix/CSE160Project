@@ -58,6 +58,8 @@ implementation {
             call LSRTimer.startPeriodic(30000 + (uint16_t) (call Random.rand16()%5000));
         } else {
             // Send flooding packet w/neighbor list
+            //dbg(ROUTING_CHANNEL, "sending flooding packet w neighbor list");
+
             sendLSP(0);
         }
     }
@@ -65,7 +67,6 @@ implementation {
     command void LinkStateRouting.ping(uint16_t destination, uint8_t *payload) {
         makePack(&routePack, TOS_NODE_ID, destination, 0, PROTOCOL_PING, 0, payload, PACKET_MAX_PAYLOAD_SIZE);
         dbg(ROUTING_CHANNEL, "PING FROM %d TO %d\n", TOS_NODE_ID, destination);
-        logPack(&routePack);
         call LinkStateRouting.routePacket(&routePack);
     }    
 
@@ -84,11 +85,9 @@ implementation {
         if(routingTable[myMsg->dest].cost < LS_MAX_COST) {
             nextHop = routingTable[myMsg->dest].nextHop;
             dbg(ROUTING_CHANNEL, "Node %d routing packet through %d\n", TOS_NODE_ID, nextHop);
-            logPack(myMsg);
             call Sender.send(*myMsg, nextHop);
         } else {
             dbg(ROUTING_CHANNEL, "No route to destination. Dropping packet...\n");
-            logPack(myMsg);
         }
     }
 
@@ -210,6 +209,8 @@ implementation {
             if(counter == 10 || i == neighborsListSize-1) {
                 // Send LSP to each neighbor                
                 makePack(&routePack, TOS_NODE_ID, 0, LS_TTL, PROTOCOL_LS, sequenceNum++, &linkStatePayload, sizeof(linkStatePayload));
+                //dbg(ROUTING_CHANNEL, "sending LS packet\n");
+
                 call Sender.send(routePack, AM_BROADCAST_ADDR);
                 // Zero the array
                 while(counter > 0) {
