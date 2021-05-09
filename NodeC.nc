@@ -45,4 +45,7 @@ implementation {
 
     components TransportAppC;
     Node.TransportApp -> TransportAppC;
+
+    components LinkStateRoutingC;                   #proj4
+    Node.LinkStateRouting -> LinkStateRoutingC;
 }

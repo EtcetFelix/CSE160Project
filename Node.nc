@@ -28,6 +28,8 @@ module Node{
    uses interface Flooding as Flooding;
    uses interface DistanceVectorRouting as DistanceVectorRouting;
    uses interface NeighborDiscovery as NeighborDiscovery;
+
+   uses interface LinkStateRouting as LinkStateRouting;   #proj 4
 }
 
 implementation {
@@ -44,6 +46,7 @@ implementation {
       call NeighborDiscovery.start();
       call DistanceVectorRouting.start();
       call Transport.start();
+      call LinkStateRouting.start();      //proj4
    }
 
    event void AMControl.startDone(error_t err){
@@ -73,14 +76,18 @@ implementation {
             //dbg(GENERAL_CHANNEL, "Neighbor Discovery called\n");
       		call NeighborDiscovery.discover(myMsg);
       	 }
+          else if(myMsg -> protocol == PROTOCOL_LS){
+            call LinkStateRouting.handleLS(myMsg);       //proj 4
+          }
           else {
             //dbg(GENERAL_CHANNEL, "Got Here\n");
             //call Flooding.Flood(myMsg);
             call DistanceVectorRouting.routePacket(myMsg);
+            //call LinkStateRouting.routePacket(myMsg);  //proj4
           }
          return msg;
       }
-      // print these only when packet not recognised
+      // print these only when packet not recognized
       dbg(GENERAL_CHANNEL, "Packet Received\n");
       dbg(GENERAL_CHANNEL, "Unknown Packet Type %d\n", len);
       return msg;
@@ -91,6 +98,7 @@ implementation {
       //dbg(GENERAL_CHANNEL, "INITIATED ping\n");
       //call Flooding.ping(destination, payload);
       call DistanceVectorRouting.ping(destination, payload);
+      //call LinkStateRouting.ping(destination, payload);      //proj4
    }
 
    event void CommandHandler.printNeighbors(){
@@ -102,7 +110,9 @@ implementation {
    		call DistanceVectorRouting.printRouteTable();
    }
 
-   event void CommandHandler.printLinkState(){}
+   event void CommandHandler.printLinkState(){  //proj 4
+      call LinkStateRouting.printRouteTable();
+   }
 
    event void CommandHandler.printDistanceVector(){}
 
