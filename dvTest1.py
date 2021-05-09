@@ -6,12 +6,12 @@ def main():
     # Simulate network not running
     s.runTime(1)
 
-    s.loadTopo("dv_test1.topo")
+    s.loadTopo("long_line.topo")
     s.loadNoise("no_noise.txt")
     s.bootAll()
 
     s.addChannel(s.COMMAND_CHANNEL)
-    s.addChannel(s.GENERAL_CHANNEL)
+    #s.addChannel(s.GENERAL_CHANNEL)
     s.addChannel(s.ROUTING_CHANNEL)
 
     s.routeDMP(1)

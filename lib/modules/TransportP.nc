@@ -755,7 +755,7 @@ implementation{
         }
         // Iterate over sockets
             // If timeout -> retransmit
-            // else if established4b attempt to send packets
+            // else if established attempt to send packets
         for(i = 0; i < MAX_NUM_OF_SOCKETS; i++) {
             if(sockets[i].RTO < call TransmissionTimer.getNow()) {
                 switch(sockets[i].state) {
@@ -764,7 +764,7 @@ implementation{
                             sockets[i].lastSent = sockets[i].lastAck;
                             // Resend window
                             sendWindow(i+1);
-                            // dbg(TRANSPORT_CHANNEL, "Resending at %u\n", sockets[i].lastSent+1);
+                            dbg(TRANSPORT_CHANNEL, "Resending at %u\n", sockets[i].lastSent+1);
                             continue;
                         }
                         break;
